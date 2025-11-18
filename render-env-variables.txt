@@ -1,0 +1,12 @@
+NODE_ENV=production
+PORT=10000
+API_SECRETS=yourFrontendSecret1,yourFrontendSecret2
+DB_HOST=dpg-d4dbfcqdbo4c73dnssr0-a
+DB_PORT=5432
+DB_USER=cliqdrop_user
+DB_PASS=GUUH7CHiQaPpaYpJMhkLRzZzvGyS3jhd
+DB_NAME=cliqdrop
+UPLOAD_DIR=uploads
+MAX_FILE_SIZE=100MB
+BASE_URL=https://your-service-name.onrender.com
+

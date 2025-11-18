@@ -11,6 +11,8 @@ A RESTful API for sharing files and text messages using unique 6-digit alphanume
 - **One-Time View**: Optional deletion after first view
 - **File Download**: Direct download links for shared files
 - **Auto Cleanup**: Cron job automatically removes expired shares
+- **API Secrets**: Only approved clients with `x-api-secret` can access the API
+- **Per-User Rate Limits**: 60 text shares/min and 1GB uploads/hour per device
 
 ## 📋 Prerequisites
 
@@ -43,6 +45,7 @@ A RESTful API for sharing files and text messages using unique 6-digit alphanume
    DB_USER=your_db_user
    DB_PASS=your_db_password
    DB_NAME=cliqdrop
+   API_SECRETS=frontendSecret1,frontendSecret2
    UPLOAD_DIR=uploads
    BASE_URL=http://localhost:8080
    MAX_FILE_SIZE=100MB
@@ -88,7 +91,19 @@ CliqDrop/
 └── package.json
 ```
 
+## 🔐 API Access & Rate Limits
+
+- All requests **must** include the header `x-api-secret` with a value that matches one of the secrets specified in the `API_SECRETS` environment variable.
+- Optionally send `x-client-id` to provide a stable, anonymous identifier per end user/device. If omitted, the API will derive a fingerprint from the IP and user-agent.
+- **Rate limits (per end user/device):**
+  - Text sharing: **60 requests per minute**
+  - File uploads: **1 GB total per hour**
+  - Receive/download/health: **120 requests per minute**
+- When limits are exceeded the API responds with HTTP `429 Too Many Requests`.
+
 ## 📡 API Endpoints
+
+> **Important:** Every endpoint below requires the header `x-api-secret: <your secret>`. For better rate-limit tracking, include `x-client-id: <stable-id>` for each end user.
 
 ### 1. Upload File
 **POST** `/api/send/file`
@@ -116,6 +131,8 @@ Upload a file and receive a unique share code.
 **Example (cURL):**
 ```bash
 curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123" \
   -F "file=@/path/to/file.pdf" \
   -F "expiresIn=60" \
   -F "deleteAfterView=false"
@@ -152,6 +169,8 @@ Share text content and receive a unique share code.
 **Example (cURL):**
 ```bash
 curl -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: user-123" \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Hello, this is a test message!",
@@ -185,7 +204,9 @@ Retrieve share information using the code.
 
 **Example (cURL):**
 ```bash
-curl http://localhost:8080/api/receive/A3B9C2
+curl http://localhost:8080/api/receive/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123"
 ```
 
 ### 4. Download File
@@ -198,7 +219,9 @@ Download a file using the share code.
 
 **Example (cURL):**
 ```bash
-curl -O http://localhost:8080/api/download/A3B9C2
+curl -O http://localhost:8080/api/download/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123"
 ```
 
 ### 5. Health Check
@@ -226,6 +249,7 @@ Check API health status.
 | `DB_USER` | Database user | root |
 | `DB_PASS` | Database password | - |
 | `DB_NAME` | Database name | cliqdrop |
+| `API_SECRETS` | Comma-separated list of allowed API secrets | - |
 | `UPLOAD_DIR` | Upload directory | uploads |
 | `BASE_URL` | Base API URL | http://localhost:8080 |
 | `MAX_FILE_SIZE` | Max file size | 100MB |

@@ -10,7 +10,30 @@ http://localhost:8080/api
 
 ## Authentication
 
-No authentication required. All endpoints are public.
+All endpoints require a shared secret.
+
+- Set the environment variable `API_SECRETS` to a comma-separated list of allowed secrets.
+- Clients **must** send the header `x-api-secret: <one of the secrets>`.
+- Optionally send `x-client-id: <stable anonymous identifier>` to improve per-user rate limiting. If omitted, the API will derive a fingerprint from IP + user-agent.
+
+### Required Headers for Every Request
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `x-api-secret` | Yes | Shared secret issued by the backend owner |
+| `x-client-id` | Recommended | Stable ID per end user/device (fallback: IP + user-agent) |
+
+---
+
+## Rate Limiting
+
+Per end user/device (identified via `x-client-id` or fingerprint):
+
+- **Text sharing:** 60 requests per minute
+- **File uploads:** 1 GB total data per hour
+- **Receive / Download / Health:** 120 requests per minute
+
+When limits are exceeded the API responds with **429 Too Many Requests**.
 
 ## Response Format
 
@@ -37,6 +60,8 @@ All responses follow this structure:
 
 ## Endpoints
 
+> All requests must include `x-api-secret: <your secret>` and, ideally, `x-client-id: <stable id>`.
+
 ### 1. Upload File
 
 Upload a file and receive a unique 6-digit share code.
@@ -56,6 +81,8 @@ Upload a file and receive a unique 6-digit share code.
 **Request Example:**
 ```bash
 curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123" \
   -F "file=@document.pdf" \
   -F "expiresIn=60" \
   -F "deleteAfterView=false"
@@ -109,6 +136,8 @@ Share text content and receive a unique 6-digit share code.
 **Request Example:**
 ```bash
 curl -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: user-123" \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Hello, this is a test message!",
@@ -152,7 +181,9 @@ Retrieve share information using the code.
 
 **Request Example:**
 ```bash
-curl http://localhost:8080/api/receive/A3B9C2
+curl http://localhost:8080/api/receive/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123"
 ```
 
 **Response (200 OK) - File Share:**
@@ -214,7 +245,9 @@ Download a file using the share code.
 
 **Request Example:**
 ```bash
-curl -O http://localhost:8080/api/download/A3B9C2
+curl -O http://localhost:8080/api/download/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123"
 ```
 
 **Response (200 OK):**
@@ -245,7 +278,9 @@ Check API health status.
 
 **Request Example:**
 ```bash
-curl http://localhost:8080/api/health
+curl http://localhost:8080/api/health \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: monitor-123"
 ```
 
 **Response (200 OK):**
@@ -291,7 +326,10 @@ Set `deleteAfterView: true` to automatically delete the share after the first ac
 
 ## Rate Limiting
 
-Currently, no rate limiting is implemented. Consider implementing rate limiting for production use.
+- **Text sharing:** max 60 requests per minute per end user/device
+- **File uploads:** max 1 GB total uploaded bytes per hour per end user/device
+
+When limits are exceeded, the API returns HTTP `429 Too Many Requests`. Windows reset automatically (60 seconds for text, 1 hour for file uploads).
 
 ## Error Codes
 
@@ -300,6 +338,7 @@ Currently, no rate limiting is implemented. Consider implementing rate limiting 
 | 200 | Success |
 | 201 | Created |
 | 400 | Bad Request (invalid input) |
+| 429 | Too Many Requests (rate limit hit) |
 | 404 | Not Found (code not found or expired) |
 | 500 | Internal Server Error |
 
@@ -310,6 +349,8 @@ Currently, no rate limiting is implemented. Consider implementing rate limiting 
 1. **Upload File:**
 ```bash
 curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: workflow-user" \
   -F "file=@photo.jpg" \
   -F "expiresIn=60"
 ```
@@ -320,12 +361,16 @@ Response: `{ "code": "A3B9C2", ... }`
 
 3. **Recipient Retrieves Info:**
 ```bash
-curl http://localhost:8080/api/receive/A3B9C2
+curl http://localhost:8080/api/receive/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: workflow-user"
 ```
 
 4. **Recipient Downloads:**
 ```bash
-curl -O http://localhost:8080/api/download/A3B9C2
+curl -O http://localhost:8080/api/download/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: workflow-user"
 ```
 
 ### Complete Text Sharing Flow
@@ -333,6 +378,8 @@ curl -O http://localhost:8080/api/download/A3B9C2
 1. **Share Text:**
 ```bash
 curl -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: workflow-user" \
   -H "Content-Type: application/json" \
   -d '{"content": "Secret message", "deleteAfterView": true}'
 ```
@@ -343,7 +390,9 @@ Response: `{ "code": "X7Y2Z9", ... }`
 
 3. **Recipient Retrieves:**
 ```bash
-curl http://localhost:8080/api/receive/X7Y2Z9
+curl http://localhost:8080/api/receive/X7Y2Z9 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: workflow-user"
 ```
 
 Response includes the text content.

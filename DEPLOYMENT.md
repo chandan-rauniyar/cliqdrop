@@ -200,6 +200,7 @@ Click **"Add Environment Variable"** and add:
 ```
 NODE_ENV=production
 PORT=10000
+API_SECRETS=frontendSecret1,frontendSecret2
 ```
 
 **Database Connection:**
@@ -229,10 +230,18 @@ MAX_FILE_SIZE=100MB
 BASE_URL=https://your-service-name.onrender.com
 ```
 
+**API Secrets**
+- Use `API_SECRETS` to control which frontend applications can call the API.
+- Provide a comma-separated list (e.g., `frontendWeb,internalTool`).
+- Share each secret privately with trusted frontend deployments.
+- Frontends must include `x-api-secret: <secret>` in every request.
+- Encourage frontends to send `x-client-id: <unique-device-id>` so rate limiting stays accurate even without logins.
+
 **Complete Environment Variables List:**
 ```
 NODE_ENV=production
 PORT=10000
+API_SECRETS=frontendSecret1,frontendSecret2
 DB_HOST=<from-database-connections>
 DB_PORT=5432
 DB_USER=<from-database-connections>
@@ -489,6 +498,7 @@ git remote -v
 ```
 NODE_ENV=production
 PORT=10000
+API_SECRETS=frontendSecret1,frontendSecret2
 DB_HOST=<your-db-host>
 DB_PORT=5432
 DB_USER=<your-db-user>
@@ -503,14 +513,20 @@ BASE_URL=https://your-service-name.onrender.com
 
 ```bash
 # Health check
-curl https://your-service-name.onrender.com/api/health
+curl https://your-service-name.onrender.com/api/health \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: monitor-123"
 
 # Upload file
 curl -X POST https://your-service-name.onrender.com/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123" \
   -F "file=@test.txt"
 
 # Share text
 curl -X POST https://your-service-name.onrender.com/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-123" \
   -H "Content-Type: application/json" \
   -d '{"content":"Test"}'
 ```

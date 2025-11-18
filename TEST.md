@@ -7,6 +7,12 @@ Complete testing documentation for all API endpoints with sample requests, expec
 http://localhost:8080/api
 ```
 
+## Required Headers
+- `x-api-secret`: one of the secrets defined in `API_SECRETS`
+- `x-client-id`: stable identifier per end user/device (string). If you cannot generate one, keep it constant for each browser/device session.
+
+> All cURL commands below include these headers explicitly. Make sure to add them when testing in Postman or another tool.
+
 ---
 
 ## 📋 Table of Contents
@@ -16,6 +22,7 @@ http://localhost:8080/api
 4. [Get Share by Code](#4-get-share-by-code)
 5. [Download File](#5-download-file)
 6. [Error Scenarios](#6-error-scenarios)
+7. [Rate Limit Validation](#7-rate-limit-validation)
 
 ---
 
@@ -33,7 +40,9 @@ http://localhost:8080/api/health
 
 ### cURL Command
 ```bash
-curl http://localhost:8080/api/health
+curl http://localhost:8080/api/health \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: tester-health"
 ```
 
 ### Postman Setup
@@ -69,6 +78,8 @@ http://localhost:8080/api/send/file
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-basic-file" \
   -F "file=@test-document.pdf"
 ```
 
@@ -97,6 +108,8 @@ curl -X POST http://localhost:8080/api/send/file \
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-custom-expiry" \
   -F "file=@photo.jpg" \
   -F "expiresIn=60"
 ```
@@ -127,6 +140,8 @@ curl -X POST http://localhost:8080/api/send/file \
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-delete-once" \
   -F "file=@secret-document.pdf" \
   -F "expiresIn=120" \
   -F "deleteAfterView=true"
@@ -159,6 +174,8 @@ curl -X POST http://localhost:8080/api/send/file \
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-max-expiry" \
   -F "file=@large-file.zip" \
   -F "expiresIn=1440"
 ```
@@ -188,7 +205,9 @@ curl -X POST http://localhost:8080/api/send/file \
 
 #### cURL Command
 ```bash
-curl -X POST http://localhost:8080/api/send/file
+curl -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: device-no-file"
 ```
 
 #### Postman Setup
@@ -242,6 +261,8 @@ http://localhost:8080/api/send/text
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: text-basic" \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Hello, this is a test message!"
@@ -280,6 +301,8 @@ curl -X POST http://localhost:8080/api/send/text \
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: text-custom-expiry" \
   -H "Content-Type: application/json" \
   -d '{
     "content": "This is a longer message with multiple words to test the word counting functionality.",
@@ -320,6 +343,8 @@ curl -X POST http://localhost:8080/api/send/text \
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: text-delete-view" \
   -H "Content-Type: application/json" \
   -d '{
     "content": "This is a secret message that should be deleted after viewing.",
@@ -392,6 +417,8 @@ curl -X POST http://localhost:8080/api/send/text \
 #### cURL Command
 ```bash
 curl -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: text-missing-content" \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -460,7 +487,9 @@ http://localhost:8080/api/receive/T2U1V0
 
 #### cURL Command
 ```bash
-curl http://localhost:8080/api/receive/A3B9C2
+curl http://localhost:8080/api/receive/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: receive-file"
 ```
 
 #### Postman Setup
@@ -493,7 +522,9 @@ curl http://localhost:8080/api/receive/A3B9C2
 
 #### cURL Command
 ```bash
-curl http://localhost:8080/api/receive/T2U1V0
+curl http://localhost:8080/api/receive/T2U1V0 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: receive-text"
 ```
 
 #### Postman Setup
@@ -521,7 +552,9 @@ curl http://localhost:8080/api/receive/T2U1V0
 
 #### cURL Command
 ```bash
-curl http://localhost:8080/api/receive/a3b9c2
+curl http://localhost:8080/api/receive/a3b9c2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: receive-lowercase"
 ```
 
 #### Postman Setup
@@ -538,7 +571,9 @@ Same as Test Case 1
 
 #### cURL Command
 ```bash
-curl http://localhost:8080/api/receive/ABC
+curl http://localhost:8080/api/receive/ABC \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: receive-invalid-format"
 ```
 
 #### Postman Setup
@@ -560,7 +595,9 @@ curl http://localhost:8080/api/receive/ABC
 
 #### cURL Command
 ```bash
-curl http://localhost:8080/api/receive/ZZZZZZ
+curl http://localhost:8080/api/receive/ZZZZZZ \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: receive-missing"
 ```
 
 #### Postman Setup
@@ -612,7 +649,9 @@ http://localhost:8080/api/download/X7Y2Z9
 
 #### cURL Command
 ```bash
-curl -O http://localhost:8080/api/download/A3B9C2
+curl -O http://localhost:8080/api/download/A3B9C2 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: download-file"
 ```
 
 #### Postman Setup
@@ -644,7 +683,9 @@ Simply paste the URL in your browser - file will download automatically.
 
 #### cURL Command
 ```bash
-curl http://localhost:8080/api/download/T2U1V0
+curl http://localhost:8080/api/download/T2U1V0 \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: download-text-code"
 ```
 
 #### Postman Setup
@@ -666,7 +707,9 @@ curl http://localhost:8080/api/download/T2U1V0
 
 #### cURL Command
 ```bash
-curl http://localhost:8080/api/download/INVALID
+curl http://localhost:8080/api/download/INVALID \
+  -H "x-api-secret: YOUR_SECRET" \
+  -H "x-client-id: download-invalid"
 ```
 
 #### Postman Setup
@@ -736,6 +779,77 @@ Body: { "content": "test", "expiresIn": 2000 }
 ```
 
 **Expected:** Uses maximum 1440 minutes (24 hours)
+
+---
+
+## 7. Rate Limit Validation
+
+### 7.1 Text Share Limit (60 per minute)
+
+1. Use the script below to send 61 text requests within a minute.
+2. The first 60 should succeed. The 61st should return **429 Too Many Requests** with the message `Rate limit exceeded: You can only share up to 60 texts per minute.`
+
+```bash
+API_SECRET=YOUR_SECRET
+CLIENT_ID=ratetest-text
+
+for i in $(seq 1 61); do
+  echo "Text request $i"
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    -X POST http://localhost:8080/api/send/text \
+    -H "x-api-secret: $API_SECRET" \
+    -H "x-client-id: $CLIENT_ID" \
+    -H "Content-Type: application/json" \
+    -d "{\"content\":\"Rate limit test #$i\"}"
+done
+```
+
+### 7.2 File Upload Limit (1 GB per hour)
+
+1. Create a 200 MB sample file (macOS/Linux example): `dd if=/dev/zero of=200mb.bin bs=1M count=200`
+2. Upload it six times within an hour (total 1.2 GB). The sixth upload should return **429 Too Many Requests** with the message `Rate limit exceeded: File upload limit is 1GB per hour.`
+
+```bash
+API_SECRET=YOUR_SECRET
+CLIENT_ID=ratetest-file
+
+for i in $(seq 1 6); do
+  echo "File upload $i"
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    -X POST http://localhost:8080/api/send/file \
+    -H "x-api-secret: $API_SECRET" \
+    -H "x-client-id: $CLIENT_ID" \
+    -F "file=@200mb.bin"
+done
+```
+
+> Windows users can create test files with `fsutil file createnew 200mb.bin 209715200` or use smaller files whose total size exceeds 1 GB.
+
+### 7.3 Window Reset Expectations
+
+- Text window resets 60 seconds after the first request in the current bucket.
+- File window resets 60 minutes after the first upload in the current bucket.
+- After reset, the user/device can resume using the API normally.
+
+### 7.4 Receive/Download Limit (120 per minute)
+
+1. Send 130 GET requests to `/receive/:code` (use a valid code). The first 120 should succeed. Requests 121-130 should fail with **429 Too Many Requests**.
+
+```bash
+API_SECRET=YOUR_SECRET
+CLIENT_ID=ratetest-read
+CODE=YOUR_VALID_CODE
+
+for i in $(seq 1 130); do
+  echo "Receive request $i"
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    http://localhost:8080/api/receive/$CODE \
+    -H "x-api-secret: $API_SECRET" \
+    -H "x-client-id: $CLIENT_ID"
+done
+```
+
+> You can adapt the script for `/download/:code` or `/health` if needed.
 
 ---
 
@@ -831,6 +945,9 @@ Body: { "content": "test", "expiresIn": 2000 }
    - Get Share Info
    - Download File
    - Error Tests
+4. **Collection Headers:**
+   - Add `x-api-secret` (Value: your issued secret)
+   - Add `x-client-id` (Value: `postman-client` or similar)
 
 ### Using Environment Variables in Postman
 
@@ -871,28 +988,44 @@ For dynamic code testing:
 
 ### Test All Endpoints (Bash Script)
 ```bash
+# Set once for this script
+API_SECRET=YOUR_SECRET
+CLIENT_ID=cli-script
+
 # Health check
-curl http://localhost:8080/api/health
+curl http://localhost:8080/api/health \
+  -H "x-api-secret: $API_SECRET" \
+  -H "x-client-id: $CLIENT_ID"
 
 # Upload file
 CODE=$(curl -s -X POST http://localhost:8080/api/send/file \
+  -H "x-api-secret: $API_SECRET" \
+  -H "x-client-id: $CLIENT_ID" \
   -F "file=@test.txt" | jq -r '.code')
 echo "File code: $CODE"
 
 # Get file info
-curl http://localhost:8080/api/receive/$CODE
+curl http://localhost:8080/api/receive/$CODE \
+  -H "x-api-secret: $API_SECRET" \
+  -H "x-client-id: $CLIENT_ID"
 
 # Download file
-curl -O http://localhost:8080/api/download/$CODE
+curl -O http://localhost:8080/api/download/$CODE \
+  -H "x-api-secret: $API_SECRET" \
+  -H "x-client-id: $CLIENT_ID"
 
 # Share text
 TEXT_CODE=$(curl -s -X POST http://localhost:8080/api/send/text \
+  -H "x-api-secret: $API_SECRET" \
+  -H "x-client-id: $CLIENT_ID" \
   -H "Content-Type: application/json" \
   -d '{"content":"Test message"}' | jq -r '.code')
 echo "Text code: $TEXT_CODE"
 
 # Get text
-curl http://localhost:8080/api/receive/$TEXT_CODE
+curl http://localhost:8080/api/receive/$TEXT_CODE \
+  -H "x-api-secret: $API_SECRET" \
+  -H "x-client-id: $CLIENT_ID"
 ```
 
 ---

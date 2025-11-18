@@ -9,6 +9,7 @@ const { testConnection } = require('./config/db');
 const Share = require('./models/Share');
 const apiRoutes = require('./routes/api');
 const { deleteExpiredShares } = require('./utils/deleteExpired');
+const { generalRateLimiter } = require('./middleware/rateLimit');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -37,7 +38,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api', apiRoutes);
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', generalRateLimiter, (req, res) => {
   res.json({
     success: true,
     message: 'Welcome to CliqDrop API',
