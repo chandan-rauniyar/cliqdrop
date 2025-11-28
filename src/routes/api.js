@@ -35,7 +35,7 @@ router.get('/receive/:code', generalRateLimiter, getShareByCode);
  * @desc    Download file by code
  * @access  Restricted via API secret
  */
-router.get('/download/:code', generalRateLimiter, downloadFile);
+router.get('/download/:code', downloadFile);
 
 /**
  * @route   GET /api/health
